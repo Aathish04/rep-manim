@@ -8,7 +8,7 @@ from manimlib.constants import *
 class Table(VGroup):
 #TODO: Use CONFIG instead of directly passing parameters to function? Table Element retrieval.
 
-    def get_table(tabledict:dict,buff_length=0.3,line_color=WHITE,text_color=WHITE):
+    def get_table(tabledict:dict,buff_length=0.3,line_color=WHITE,raw_string_color=WHITE):
         
         def flatten(inlist):
             outlist=[]
@@ -25,16 +25,18 @@ class Table(VGroup):
         for fieldnum in range(len(fields)):
             
             if isinstance(fields[fieldnum],TexMobject)==False and isinstance(fields[fieldnum],TextMobject)==False and isinstance(fields[fieldnum],Text)==False :
-                fields[fieldnum]=TexMobject(fields[fieldnum])
+                tabledict[TextMobject(fields[fieldnum],fill_color=raw_string_color)] = tabledict.pop(fields[fieldnum])
+            
+            fields=list(tabledict.keys())
 
             for recordnum in range(0,len(tabledict[fields[fieldnum]])):
                 if isinstance(tabledict[fields[fieldnum]][recordnum],TexMobject)==False and isinstance(tabledict[fields[fieldnum]][recordnum],TextMobject)==False and isinstance(tabledict[fields[fieldnum]][recordnum],Text)==False:
-                    tabledict[fields[fieldnum]][recordnum]=TexMobject(tabledict[fields[fieldnum]][recordnum])
+                    tabledict[fields[fieldnum]][recordnum]=TextMobject(tabledict[fields[fieldnum]][recordnum],fill_color=raw_string_color)
                 else:
                     continue
 
-        cell_length=( max(fields + flatten(tabledict.values()), key=lambda m:m.get_width()) ).get_width() + 2*buff_length #The length of a record/field of max length is the base cell size
-        cell_height=( max(fields + flatten(tabledict.values()), key=lambda m:m.get_height()) ).get_height()+ 2*buff_length
+        cell_length=( max(fields + flatten(tabledict.values()), key=lambda mobject:mobject.get_width()) ).get_width() + 2*buff_length #The length/height of a record/field of max length is the base cell size
+        cell_height=( max(fields + flatten(tabledict.values()), key=lambda mobject:mobject.get_height()) ).get_height()+ 2*buff_length
         
         #The first position is set like so.
         
@@ -103,7 +105,7 @@ class Table(VGroup):
         table.add(line_hor)
         
         for l in range (len(fields)-1):
-            line=Line( start=(table[l].get_center()+ (cell_length/2,cell_height/2,0)), end =(table[l].get_center()+ (cell_length/2,-total_table_height,0)))
+            line=Line( start=(table[l].get_center()+ (cell_length/2,cell_height/2,0)), end =(table[l].get_center()+ (cell_length/2,-total_table_height,0)),color=line_color)
             table.add(line)
 
         return table
