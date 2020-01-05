@@ -40,7 +40,7 @@ class Table(VGroup):
         
         #The first position is set like so.
         
-        field_position=[ (cell_length-TexMobject(fields[0]).get_width())/2 + TexMobject(fields[0]).get_width()/2, 0,0 ] #The initial position of the first field. This is 
+        field_position=[ (cell_length-TexMobject(fields[0]).get_width())/2 + TexMobject(fields[0]).get_width()/2, 0,0 ] #The initial position of the first field. 
         
         #NOTE: Coordinates of TexMobjects in Manim are taken from centre, not top-right. Adjustments have been made.
         
