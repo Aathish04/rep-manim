@@ -19,7 +19,7 @@ class Tools():
 
 
 class Table(VGroup):
-#TODO:Table Element retrieval. Table Element Addition and Removal
+#TODO:Table Element retrieval. Responsive Table Element Addition and Removal
     CONFIG={
             "tabledict":{},
             "buff_length":0.3,
@@ -160,21 +160,44 @@ class Table(VGroup):
         
 
         if record_pos!=-1: #If a custom record postion is given
+            warnings.warn("Custom Record Positions are still in Development. May give unwanted results.")
             rec_index=fields_records_to_skip+record_pos #put the record there
         else:
             rec_index=fields_records_to_skip+records_in_required_field #Go to the end of the field and put the record there.
         
-        prev_object=self.submobjects[rec_index-1]
-        record.move_to(prev_object.get_center()-(0,self.CONFIG["cell_height"]/2,0)) #Move the record to the previous submobjects x coord and move a cell width down.
+        assigned_field=list(self.CONFIG["tabledict"].keys())[field_num]
+
+        vert_num=len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]])+1+0.5 #1 is added for field name 0.5 is added for half record width
         
-        if record_pos!=-1:
+        how_far_down=vert_num*self.CONFIG["cell_height"]/2 #How far down to move.
+        
+        record.move_to(assigned_field.get_center()-(0,how_far_down,0)) #Move the record to the assigned fields x coord and move required amount down
+        
+        if record_pos==-1:
             self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]].append(record) 
         else:
-            self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]].append(record) #add the record to tabledict
+            self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]].insert(record_pos,record) #add the record to tabledict
         
         new_submob_list = orig_submob_list[:rec_index] + [record] + orig_submob_list[rec_index:] #make the new submob list and insert record at propre place.
 
         self.submobjects = list_update(self.submobjects, new_submob_list) #update self
+      
+        return record
+
+    def remove_record(self,field_num,record_num):
+        orig_submob_list=list(self.submobjects)
+        records_in_required_field = len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]])
+        records_to_skip=0
+
+        for i in range(0,field_num): #Until you reach the field where the record should be added
+            records_to_skip+=len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[i]]) #skip the records in the field
         
-        return self
+        fields_records_to_skip = len(self.CONFIG["tabledict"].keys()) + records_to_skip #Skip all the fields and the records you are supposed to.
+        if record_num!=-1:
+            rec_index=fields_records_to_skip+record_num
+        else:
+            rec_index=fields_records_to_skip+records_in_required_field-1
         
+        self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]].pop(record_num) #remove the value from tabledict
+        
+        return self.submobjects.pop(rec_index)
