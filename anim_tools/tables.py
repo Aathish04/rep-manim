@@ -18,8 +18,7 @@ class Tools():
 
 
 
-class Table(VGroup):
-#TODO:Table Element retrieval. Responsive Table Element Addition and Removal
+class Table(VGroup): #TODO: Responsive Insertions and Deletion Specific Table position insertions.
     CONFIG={
             "tabledict":{},
             "buff_length":0.3,
@@ -32,7 +31,7 @@ class Table(VGroup):
     def __init__(self, **kwargs): #__init__ is called everytime Table() is called.
         
         for item in kwargs: #Add everything that has been given in kwargs to the config.
-                self.CONFIG[item]=kwargs[item]
+                self.CONFIG[item]=kwargs[item] #Using digest config gave AttributeError: 'dict' object has no attribute '__dict__'
         
         VGroup.__init__(self) #Initialise Table as VGroup
         
@@ -58,19 +57,19 @@ class Table(VGroup):
         #the for loop below checks that every field and record is of a valid type and converts to TextMobject if need be:
         for fieldnum in range(len(fields)):
             
-            if isinstance(fields[fieldnum],TexMobject)==False and isinstance(fields[fieldnum],TextMobject)==False and isinstance(fields[fieldnum],Text)==False :
+            if isinstance(fields[fieldnum],(TextMobject,TexMobject,Text))==False:
                 tabledict[TextMobject(fields[fieldnum],fill_color=raw_string_color)] = tabledict.pop(fields[fieldnum])
             
             fields=list(tabledict.keys())
 
             for recordnum in range(0,len(tabledict[fields[fieldnum]])):
-                if isinstance(tabledict[fields[fieldnum]][recordnum],TexMobject)==False and isinstance(tabledict[fields[fieldnum]][recordnum],TextMobject)==False and isinstance(tabledict[fields[fieldnum]][recordnum],Text)==False:
+                if isinstance(tabledict[fields[fieldnum]][recordnum],(TexMobject,TextMobject,Text))==False:
                     tabledict[fields[fieldnum]][recordnum]=TextMobject(tabledict[fields[fieldnum]][recordnum],fill_color=raw_string_color)
                 else:
                     continue
 
-        cell_length=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_width()) ).get_width() + 2*buff_length #The length/height of a record/field of max length is the base cell size
-        cell_height=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_height()) ).get_height()+ 2*buff_length
+        cell_length=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_width()) ).get_width() + 2*buff_length #The length/height of a record/field of 
+        cell_height=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_height()) ).get_height()+ 2*buff_length #max length/height is the base cell size
 
         self.CONFIG["cell_height"]=cell_height
         self.CONFIG["cell_length"]=cell_length
@@ -201,3 +200,46 @@ class Table(VGroup):
         self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]].pop(record_num) #remove the value from tabledict
         
         return self.submobjects.pop(rec_index)
+
+    def adjust_lines(self):
+        tabledict=self.CONFIG["tabledict"]
+        cell_height=self.CONFIG["cell_height"]
+
+        vertlines=self.submobjects[-(len(tabledict)-1):]
+        lowestmobject=min(self.submobjects[0:len(self.submobjects)-(len(tabledict))],key=lambda m:m.get_y())
+        anims=[]
+        
+        for line in vertlines:
+            curr_start, curr_end = line.get_start_and_end()
+            anims.extend(
+                [line.put_start_and_end_on,curr_start,(curr_end+(0,lowestmobject.get_y()-curr_end[1]-cell_height/4,0))] #Set the new bottom to the required position
+                )
+        
+        return anims
+
+    def adjust_positions(self):
+            cell_height=self.CONFIG["cell_height"]
+            tabledict=self.CONFIG["tabledict"]
+            fields=tabledict.keys()
+            anim_list=[]
+            
+            #VERY VERY TACKY. MUST CHANGE:
+            class TempData(): #I mean, really? Thats a performance hog if I've ever seen one...
+                pos_to_comp=0
+                records=[]
+
+
+            for field in fields:
+                TempData.records=tabledict[field]
+                TempData.pos_to_comp=field.get_center()
+                
+                for record in TempData.records:
+                    if np.abs(record.get_center()[1]-TempData.pos_to_comp[1])>cell_height: #if the distance between two records #greater than one cell height
+                        TempData.pos_to_comp=record.get_center()  #Set the position to compare
+                        anim_list.extend([record.shift,(UP*cell_height/2)])
+                        del record
+                    else:
+                        TempData.pos_to_comp=record.get_center()
+            
+            
+            return anim_list
