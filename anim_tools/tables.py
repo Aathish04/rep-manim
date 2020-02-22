@@ -1,11 +1,18 @@
 import warnings
 
-from manimlib.mobject.types.vectorized_mobject import VGroup
 from manimlib.utils.iterables import list_update
+
+from manimlib.animation.transform import ReplacementTransform
+from manimlib.animation.transform import ApplyMethod
+from manimlib.animation.composition import AnimationGroup
+
+from manimlib.mobject.types.vectorized_mobject import VGroup
+from manimlib.mobject.geometry import Line
+
 from manimlib.mobject.svg.tex_mobject import TexMobject
 from manimlib.mobject.svg.tex_mobject import TextMobject
 from manimlib.mobject.svg.text_mobject import Text
-from manimlib.mobject.geometry import Line
+
 from manimlib.constants import *
 
 class Tools():
@@ -18,7 +25,7 @@ class Tools():
 
 
 
-class Table(VGroup): #TODO: Responsive Insertions and Deletion Specific Table position insertions.
+class Table(VGroup): #TODO: Specific Table position insertions.
     CONFIG={
             "tabledict":{},
             "buff_length":0.3,
@@ -211,11 +218,15 @@ class Table(VGroup): #TODO: Responsive Insertions and Deletion Specific Table po
         
         for line in vertlines:
             curr_start, curr_end = line.get_start_and_end()
-            anims.extend(
-                [line.put_start_and_end_on,curr_start,(curr_end+(0,lowestmobject.get_y()-curr_end[1]-cell_height/4,0))] #Set the new bottom to the required position
+            
+            new_end=np.array(
+                (curr_end)+(0,lowestmobject.get_y()-curr_end[1]-cell_height/4,0)
                 )
-        
-        return anims
+            
+            new_line=Line(curr_start,new_end,color=self.CONFIG["line_color"])
+            anims.append(ReplacementTransform(line,new_line)) #Set the new bottom to the required position
+
+        return AnimationGroup(*anims)
 
     def adjust_positions(self):
             cell_height=self.CONFIG["cell_height"]
@@ -242,4 +253,4 @@ class Table(VGroup): #TODO: Responsive Insertions and Deletion Specific Table po
                         TempData.pos_to_comp=record.get_center()
             
             
-            return anim_list
+            return ApplyMethod(*anim_list)
