@@ -2,7 +2,8 @@ import warnings
 
 from manimlib.utils.iterables import list_update
 
-from manimlib.animation.transform import ReplacementTransform
+from manimlib.animation.creation import ShowCreation
+from manimlib.animation.transform import Transform
 from manimlib.animation.transform import ApplyMethod
 from manimlib.animation.composition import AnimationGroup
 
@@ -147,7 +148,10 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         self.add(line_hor) #This is the horizontal separator
         
         for l in range (len(fields)-1): #These create the vertical separators.
-            line=Line( start=(self[l].get_center()+ (cell_length/2,cell_height/2,0)), end =(self[l].get_center()+ (cell_length/2,-total_table_height,0)),color=line_color)
+            line=Line( start=(self[l].get_center()+ (cell_length/2,cell_height/2,0)), 
+            end =(self[l].get_center()+ (cell_length/2,-total_table_height,0)),
+            color=line_color)
+            
             self.add(line)
 
     def add_record(self,record,field_num,record_pos=-1):
@@ -211,21 +215,34 @@ class Table(VGroup): #TODO: Specific Table position insertions.
     def adjust_lines(self):
         tabledict=self.CONFIG["tabledict"]
         cell_height=self.CONFIG["cell_height"]
+        cell_length=self.CONFIG["cell_length"]
 
         vertlines=self.submobjects[-(len(tabledict)-1):]
         lowestmobject=min(self.submobjects[0:len(self.submobjects)-(len(tabledict))],key=lambda m:m.get_y())
+        rightestmobject=max(self.submobjects[:len(tabledict)],key=lambda m:m.get_x())
         anims=[]
         
         for line in vertlines:
             curr_start, curr_end = line.get_start_and_end()
-            
-            new_end=np.array(
-                (curr_end)+(0,lowestmobject.get_y()-curr_end[1]-cell_height/4,0)
-                )
-            
-            new_line=Line(curr_start,new_end,color=self.CONFIG["line_color"])
-            anims.append(ReplacementTransform(line,new_line)) #Set the new bottom to the required position
+            if line.get_angle()*DEGREES==0:#This only happens when a field has been added, but a vertical separator doesnt exist for it.
+                new_end=np.array(
+                    curr_end+(rightestmobject.get_x()-curr_end[0]+cell_length/4,0,0)
+                    )
+                
+                newsep=Line( #This is the vertical separator for the new field.
+                start=(rightestmobject.get_center() - (cell_length/4,-cell_height/4,0)),
+                end =(rightestmobject.get_center() - (cell_length/4,+rightestmobject.get_y()-lowestmobject.get_y()+cell_height/4,0)),
+                color=self.CONFIG["line_color"])
+                
+                anims.append(ShowCreation(newsep))
+                self.add(newsep)
+            else:  
+                new_end=np.array(
+                    (curr_end)+(0,lowestmobject.get_y()-curr_end[1]-cell_height/4,0)
+                    )
 
+            new_line=Line(curr_start,new_end,color=self.CONFIG["line_color"])
+            anims.append(Transform(line,new_line)) #Set the new bottom to the required position
         return AnimationGroup(*anims)
 
     def adjust_positions(self):
@@ -254,3 +271,22 @@ class Table(VGroup): #TODO: Specific Table position insertions.
             
             
             return ApplyMethod(*anim_list)
+
+
+    def add_field(self,field,field_pos=-1):
+        tabledict=self.CONFIG["tabledict"]
+        cell_height=self.CONFIG["cell_height"]
+        cell_length=self.CONFIG["cell_length"]
+        field_index=len(tabledict)
+
+        if isinstance(field,(Text,TextMobject,TexMobject))==False:
+            field=TextMobject(field)
+        
+        firstfield=self.submobjects[0]
+        new_field_pos=firstfield.get_center()+((len(tabledict)*cell_length/2),0,0)
+
+        field.move_to(new_field_pos)
+
+        self.submobjects=self.submobjects[:field_index] + [field] + self.submobjects[field_index:]
+        tabledict[field]=[]
+        return field
