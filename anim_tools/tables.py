@@ -52,6 +52,9 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         instead. Table.get_table() now returns nothing.''')
     
     def make_table(self):
+
+        self.unchanged=True #unchanged becomes False when some record or field has been added.
+
         #Get values from CONFIG
         tabledict=self.CONFIG["tabledict"]
         buff_length=self.CONFIG["buff_length"]
@@ -155,6 +158,8 @@ class Table(VGroup): #TODO: Specific Table position insertions.
             self.add(line)
 
     def add_record(self,record,field_num,record_pos=-1):
+        self.unchanged=False
+        
         orig_submob_list=list(self.submobjects)
         records_in_required_field = len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]])
         records_to_skip=0
@@ -264,7 +269,11 @@ class Table(VGroup): #TODO: Specific Table position insertions.
                 for record in TempData.records:
                     if np.abs(record.get_center()[1]-TempData.pos_to_comp[1])>cell_height: #if the distance between two records #greater than one cell height
                         TempData.pos_to_comp=record.get_center()  #Set the position to compare
-                        anim_list.extend([record.shift,(UP*cell_height/2)])
+                        
+                        anim_list.extend(
+                            [record.shift,(UP*cell_height/2)]
+                            )
+                        
                         del record
                     else:
                         TempData.pos_to_comp=record.get_center()
@@ -272,8 +281,26 @@ class Table(VGroup): #TODO: Specific Table position insertions.
             
             return ApplyMethod(*anim_list)
 
+    def scale(self, scale_factor, **kwargs): #custom scale function updates the cell length and table length as required
+        if self.unchanged==False:
+            self.CONFIG["cell_length"]*=scale_factor
+            self.CONFIG["cell_height"]*=scale_factor
+        """
+        Default behavior is to scale about the center of the mobject.
+        The argument about_edge can be a vector, indicating which side of
+        the mobject to scale about, e.g., mob.scale(about_edge = RIGHT)
+        scales about mob.get_right().
+        Otherwise, if about_point is given a value, scaling is done with
+        respect to that point.
+        """
+        self.apply_points_function_about_point(
+            lambda points: scale_factor * points, **kwargs
+        )
+        return self
 
     def add_field(self,field,field_pos=-1):
+        self.unchanged==False
+        
         tabledict=self.CONFIG["tabledict"]
         cell_height=self.CONFIG["cell_height"]
         cell_length=self.CONFIG["cell_length"]
