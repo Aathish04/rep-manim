@@ -45,6 +45,23 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         
         self.make_table() #Make the table with the parameters in CONFIG
     
+    def scale(self, scale_factor, **kwargs): #custom scale function updates the cell length and table length as required
+        if self.unchanged==False:
+            self.CONFIG["cell_length"]*=scale_factor
+            self.CONFIG["cell_height"]*=scale_factor
+        """
+        Default behavior is to scale about the center of the mobject.
+        The argument about_edge can be a vector, indicating which side of
+        the mobject to scale about, e.g., mob.scale(about_edge = RIGHT)
+        scales about mob.get_right().
+        Otherwise, if about_point is given a value, scaling is done with
+        respect to that point.
+        """
+        self.apply_points_function_about_point(
+            lambda points: scale_factor * points, **kwargs
+        )
+        return self
+    
     def get_table(**kwargs): #DEPRECATED! DO NOT USE
         warnings.warn('''
         Table.get_table() has been deprecated.
@@ -217,6 +234,26 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         
         return self.submobjects.pop(rec_index)
 
+    def add_field(self,field,field_pos=-1):
+        self.unchanged==False
+        
+        tabledict=self.CONFIG["tabledict"]
+        cell_height=self.CONFIG["cell_height"]
+        cell_length=self.CONFIG["cell_length"]
+        field_index=len(tabledict)
+
+        if isinstance(field,(Text,TextMobject,TexMobject))==False:
+            field=TextMobject(field)
+        
+        firstfield=self.submobjects[0]
+        new_field_pos=firstfield.get_center()+((len(tabledict)*cell_length/2),0,0)
+
+        field.move_to(new_field_pos)
+
+        self.submobjects=self.submobjects[:field_index] + [field] + self.submobjects[field_index:]
+        tabledict[field]=[]
+        return field
+
     def adjust_lines(self):
         tabledict=self.CONFIG["tabledict"]
         cell_height=self.CONFIG["cell_height"]
@@ -280,40 +317,3 @@ class Table(VGroup): #TODO: Specific Table position insertions.
             
             
             return ApplyMethod(*anim_list)
-
-    def scale(self, scale_factor, **kwargs): #custom scale function updates the cell length and table length as required
-        if self.unchanged==False:
-            self.CONFIG["cell_length"]*=scale_factor
-            self.CONFIG["cell_height"]*=scale_factor
-        """
-        Default behavior is to scale about the center of the mobject.
-        The argument about_edge can be a vector, indicating which side of
-        the mobject to scale about, e.g., mob.scale(about_edge = RIGHT)
-        scales about mob.get_right().
-        Otherwise, if about_point is given a value, scaling is done with
-        respect to that point.
-        """
-        self.apply_points_function_about_point(
-            lambda points: scale_factor * points, **kwargs
-        )
-        return self
-
-    def add_field(self,field,field_pos=-1):
-        self.unchanged==False
-        
-        tabledict=self.CONFIG["tabledict"]
-        cell_height=self.CONFIG["cell_height"]
-        cell_length=self.CONFIG["cell_length"]
-        field_index=len(tabledict)
-
-        if isinstance(field,(Text,TextMobject,TexMobject))==False:
-            field=TextMobject(field)
-        
-        firstfield=self.submobjects[0]
-        new_field_pos=firstfield.get_center()+((len(tabledict)*cell_length/2),0,0)
-
-        field.move_to(new_field_pos)
-
-        self.submobjects=self.submobjects[:field_index] + [field] + self.submobjects[field_index:]
-        tabledict[field]=[]
-        return field
