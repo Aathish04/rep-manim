@@ -32,14 +32,21 @@ class Table(VGroup): #TODO: Specific Table position insertions.
             "buff_length":0.3,
             "line_color":WHITE,
             "raw_string_color":WHITE,
-            "cell_height":0,
-            "cell_width":0
         }
 
-    def __init__(self, **kwargs): #__init__ is called everytime Table() is called.
-        
+    def __init__(self,tabledict,**kwargs): #__init__ is called everytime Table() is called.
+
         for item in kwargs: #Add everything that has been given in kwargs to the config.
                 self.CONFIG[item]=kwargs[item] #Using digest config gave AttributeError: 'dict' object has no attribute '__dict__'
+        
+        if not self.CONFIG["tabledict"]:
+            self.tabledict:dict = tabledict
+        self.buff_length:Union[float,int]=self.CONFIG["buff_length"]
+        self.line_color:Union[str,hex]=self.CONFIG["line_color"]
+        self.raw_string_color:Union[str,hex]=self.CONFIG["raw_string_color"]
+        self.unchanged:bool=True
+        # self.cell_height
+        # self.cell_length
         
         VGroup.__init__(self) #Initialise Table as VGroup
         
@@ -47,8 +54,8 @@ class Table(VGroup): #TODO: Specific Table position insertions.
     
     def scale(self, scale_factor, **kwargs): #custom scale function updates the cell length and table length as required
         if self.unchanged==False:
-            self.CONFIG["cell_length"]*=scale_factor
-            self.CONFIG["cell_height"]*=scale_factor
+            self.cell_length*=scale_factor
+            self.cell_height*=scale_factor
         """
         Default behavior is to scale about the center of the mobject.
         The argument about_edge can be a vector, indicating which side of
@@ -73,10 +80,10 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         self.unchanged=True #unchanged becomes False when some record or field has been added.
 
         #Get values from CONFIG
-        tabledict=self.CONFIG["tabledict"]
-        buff_length=self.CONFIG["buff_length"]
-        line_color=self.CONFIG["line_color"]
-        raw_string_color=self.CONFIG["raw_string_color"]
+        tabledict=self.tabledict
+        buff_length=self.buff_length
+        line_color=self.line_color
+        raw_string_color=self.raw_string_color
         
         #self is now the table. so self.add has replaced table.add in this function.
         
@@ -99,8 +106,8 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         cell_length=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_width()) ).get_width() + 2*buff_length #The length/height of a record/field of 
         cell_height=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_height()) ).get_height()+ 2*buff_length #max length/height is the base cell size
 
-        self.CONFIG["cell_height"]=cell_height
-        self.CONFIG["cell_length"]=cell_length
+        self.cell_height=cell_height
+        self.cell_length=cell_length
         
         #The first position is set like so.
         
@@ -178,7 +185,7 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         self.unchanged=False
         
         orig_submob_list=list(self.submobjects)
-        records_in_required_field = len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]])
+        records_in_required_field = len(self.tabledict[list(self.tabledict.keys())[field_num]])
         records_to_skip=0
 
         if isinstance(record,TexMobject)==False and isinstance(record,TextMobject)==False and isinstance(record,Text)==False :
@@ -186,9 +193,9 @@ class Table(VGroup): #TODO: Specific Table position insertions.
 
 
         for i in range(0,field_num): #Until you reach the field where the record should be added
-            records_to_skip+=len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[i]]) #skip the records in the field
+            records_to_skip+=len(self.tabledict[list(self.tabledict.keys())[i]]) #skip the records in the field
          
-        fields_records_to_skip = len(self.CONFIG["tabledict"].keys()) + records_to_skip #Skip all the fields and the records you are supposed to.
+        fields_records_to_skip = len(self.tabledict.keys()) + records_to_skip #Skip all the fields and the records you are supposed to.
         
 
         if record_pos!=-1: #If a custom record postion is given
@@ -197,18 +204,18 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         else:
             rec_index=fields_records_to_skip+records_in_required_field #Go to the end of the field and put the record there.
         
-        assigned_field=list(self.CONFIG["tabledict"].keys())[field_num]
+        assigned_field=list(self.tabledict.keys())[field_num]
 
-        vert_num=len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]])+1+0.5 #1 is added for field name 0.5 is added for half record width
+        vert_num=len(self.tabledict[list(self.tabledict.keys())[field_num]])+1+0.5 #1 is added for field name 0.5 is added for half record width
         
-        how_far_down=vert_num*self.CONFIG["cell_height"]/2 #How far down to move.
+        how_far_down=vert_num*self.cell_height/2 #How far down to move.
         
         record.move_to(assigned_field.get_center()-(0,how_far_down,0)) #Move the record to the assigned fields x coord and move required amount down
         
         if record_pos==-1:
-            self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]].append(record) 
+            self.tabledict[list(self.tabledict.keys())[field_num]].append(record) 
         else:
-            self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]].insert(record_pos,record) #add the record to tabledict
+            self.tabledict[list(self.tabledict.keys())[field_num]].insert(record_pos,record) #add the record to tabledict
         
         new_submob_list = orig_submob_list[:rec_index] + [record] + orig_submob_list[rec_index:] #make the new submob list and insert record at propre place.
 
@@ -218,28 +225,28 @@ class Table(VGroup): #TODO: Specific Table position insertions.
 
     def remove_record(self,field_num,record_num):
         orig_submob_list=list(self.submobjects)
-        records_in_required_field = len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]])
+        records_in_required_field = len(self.tabledict[list(self.tabledict.keys())[field_num]])
         records_to_skip=0
 
         for i in range(0,field_num): #Until you reach the field where the record should be added
-            records_to_skip+=len(self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[i]]) #skip the records in the field
+            records_to_skip+=len(self.tabledict[list(self.tabledict.keys())[i]]) #skip the records in the field
         
-        fields_records_to_skip = len(self.CONFIG["tabledict"].keys()) + records_to_skip #Skip all the fields and the records you are supposed to.
+        fields_records_to_skip = len(self.tabledict.keys()) + records_to_skip #Skip all the fields and the records you are supposed to.
         if record_num!=-1:
             rec_index=fields_records_to_skip+record_num
         else:
             rec_index=fields_records_to_skip+records_in_required_field-1
         
-        self.CONFIG["tabledict"][list(self.CONFIG["tabledict"].keys())[field_num]].pop(record_num) #remove the value from tabledict
+        self.tabledict[list(self.tabledict.keys())[field_num]].pop(record_num) #remove the value from tabledict
         
         return self.submobjects.pop(rec_index)
 
     def add_field(self,field,field_pos=-1):
         self.unchanged==False
         
-        tabledict=self.CONFIG["tabledict"]
-        cell_height=self.CONFIG["cell_height"]
-        cell_length=self.CONFIG["cell_length"]
+        tabledict=self.tabledict
+        cell_height=self.cell_height
+        cell_length=self.cell_length
         field_index=len(tabledict)
 
         if isinstance(field,(Text,TextMobject,TexMobject))==False:
@@ -255,9 +262,9 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         return field
 
     def adjust_lines(self):
-        tabledict=self.CONFIG["tabledict"]
-        cell_height=self.CONFIG["cell_height"]
-        cell_length=self.CONFIG["cell_length"]
+        tabledict=self.tabledict
+        cell_height=self.cell_height
+        cell_length=self.cell_length
 
         vertlines=self.submobjects[-(len(tabledict)-1):]
         lowestmobject=min(self.submobjects[0:len(self.submobjects)-(len(tabledict))],key=lambda m:m.get_y())
@@ -274,7 +281,7 @@ class Table(VGroup): #TODO: Specific Table position insertions.
                 newsep=Line( #This is the vertical separator for the new field.
                 start=(rightestmobject.get_center() - (cell_length/4,-cell_height/4,0)),
                 end =(rightestmobject.get_center() - (cell_length/4,+rightestmobject.get_y()-lowestmobject.get_y()+cell_height/4,0)),
-                color=self.CONFIG["line_color"])
+                color=self.line_color)
                 
                 anims.append(ShowCreation(newsep))
                 self.add(newsep)
@@ -283,13 +290,13 @@ class Table(VGroup): #TODO: Specific Table position insertions.
                     (curr_end)+(0,lowestmobject.get_y()-curr_end[1]-cell_height/4,0)
                     )
 
-            new_line=Line(curr_start,new_end,color=self.CONFIG["line_color"])
+            new_line=Line(curr_start,new_end,color=self.line_color)
             anims.append(Transform(line,new_line)) #Set the new bottom to the required position
         return AnimationGroup(*anims)
 
     def adjust_positions(self):
-            cell_height=self.CONFIG["cell_height"]
-            tabledict=self.CONFIG["tabledict"]
+            cell_height=self.cell_height
+            tabledict=self.tabledict
             fields=tabledict.keys()
             anim_list=[]
             
