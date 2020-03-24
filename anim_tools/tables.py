@@ -14,6 +14,9 @@ from manimlib.mobject.geometry import Line
 from manimlib.mobject.svg.tex_mobject import TexMobject
 from manimlib.mobject.svg.tex_mobject import TextMobject
 from manimlib.mobject.svg.text_mobject import Text
+from manimlib.mobject.numbers import DecimalNumber
+from manimlib.mobject.numbers import Integer
+
 
 from manimlib.constants import *
 
@@ -93,13 +96,13 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         #the for loop below checks that every field and record is of a valid type and converts to TextMobject if need be:
         for fieldnum in range(len(fields)):
             
-            if isinstance(fields[fieldnum],(TextMobject,TexMobject,Text))==False:
+            if isinstance(fields[fieldnum],(TextMobject,TexMobject,Text,DecimalNumber))==False:
                 tabledict[TextMobject(fields[fieldnum],fill_color=raw_string_color)] = tabledict.pop(fields[fieldnum])
             
             fields=list(tabledict.keys())
 
             for recordnum in range(0,len(tabledict[fields[fieldnum]])):
-                if isinstance(tabledict[fields[fieldnum]][recordnum],(TexMobject,TextMobject,Text))==False:
+                if isinstance(tabledict[fields[fieldnum]][recordnum],(TexMobject,TextMobject,Text,DecimalNumber))==False:
                     tabledict[fields[fieldnum]][recordnum]=TextMobject(tabledict[fields[fieldnum]][recordnum],fill_color=raw_string_color)
                 else:
                     continue
@@ -189,7 +192,7 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         records_in_required_field = len(self.tabledict[list(self.tabledict.keys())[field_num]])
         records_to_skip=0
 
-        if isinstance(record,TexMobject)==False and isinstance(record,TextMobject)==False and isinstance(record,Text)==False :
+        if isinstance(record,(TexMobject,TextMobject,Text,DecimalNumber))==False :
                 record=TextMobject(record) #Mandatory Type Conversions
 
 
@@ -250,7 +253,7 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         cell_length=self.cell_length
         field_index=len(tabledict)
 
-        if isinstance(field,(Text,TextMobject,TexMobject))==False:
+        if isinstance(field,(Text,TextMobject,TexMobject,DecimalNumber))==False:
             field=TextMobject(field)
         
         firstfield=self.submobjects[0]
