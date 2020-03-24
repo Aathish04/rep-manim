@@ -96,13 +96,13 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         #the for loop below checks that every field and record is of a valid type and converts to TextMobject if need be:
         for fieldnum in range(len(fields)):
             
-            if isinstance(fields[fieldnum],(TextMobject,TexMobject,Text,DecimalNumber))==False:
+            if isinstance(fields[fieldnum],(TextMobject,TexMobject,Text,DecimalNumber,Integer))==False:
                 tabledict[TextMobject(fields[fieldnum],fill_color=raw_string_color)] = tabledict.pop(fields[fieldnum])
             
             fields=list(tabledict.keys())
 
             for recordnum in range(0,len(tabledict[fields[fieldnum]])):
-                if isinstance(tabledict[fields[fieldnum]][recordnum],(TexMobject,TextMobject,Text,DecimalNumber))==False:
+                if isinstance(tabledict[fields[fieldnum]][recordnum],(TexMobject,TextMobject,Text,DecimalNumber,Integer))==False:
                     tabledict[fields[fieldnum]][recordnum]=TextMobject(tabledict[fields[fieldnum]][recordnum],fill_color=raw_string_color)
                 else:
                     continue
@@ -192,7 +192,7 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         records_in_required_field = len(self.tabledict[list(self.tabledict.keys())[field_num]])
         records_to_skip=0
 
-        if isinstance(record,(TexMobject,TextMobject,Text,DecimalNumber))==False :
+        if isinstance(record,(TexMobject,TextMobject,Text,DecimalNumber,Integer))==False :
                 record=TextMobject(record) #Mandatory Type Conversions
 
 
@@ -253,7 +253,7 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         cell_length=self.cell_length
         field_index=len(tabledict)
 
-        if isinstance(field,(Text,TextMobject,TexMobject,DecimalNumber))==False:
+        if isinstance(field,(Text,TextMobject,TexMobject,DecimalNumber,Integer))==False:
             field=TextMobject(field)
         
         firstfield=self.submobjects[0]
