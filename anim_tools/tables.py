@@ -244,6 +244,25 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         self.tabledict[list(self.tabledict.keys())[field_num]].pop(record_num) #remove the value from tabledict
         
         return self.submobjects.pop(rec_index)
+    
+    def get_record(self,field_num,record_num):
+        orig_submob_list=list(self.submobjects)
+        records_in_required_field = len(self.tabledict[list(self.tabledict.keys())[field_num]])
+        records_to_skip=0
+
+        for i in range(0,field_num): #Until you reach the field where the record should be added
+            records_to_skip+=len(self.tabledict[list(self.tabledict.keys())[i]]) #skip the records in the field
+
+        fields_records_to_skip = len(self.tabledict.keys()) + records_to_skip #Skip all the fields and the records you are supposed to.
+        if record_num!=-1:
+            rec_index=fields_records_to_skip+record_num
+        else:
+            rec_index=fields_records_to_skip+records_in_required_field-1
+
+        return self.submobjects[rec_index]
+
+    def get_field(self, field_num):
+        return self.submobjects[field_num]
 
     def add_field(self,field,field_pos=-1):
         self.unchanged==False
