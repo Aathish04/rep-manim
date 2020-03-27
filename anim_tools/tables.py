@@ -72,13 +72,6 @@ class Table(VGroup): #TODO: Specific Table position insertions.
             lambda points: scale_factor * points, **kwargs
         )
         return self
-    
-    def get_table(**kwargs): #DEPRECATED! DO NOT USE
-        warnings.warn('''
-        Table.get_table() has been deprecated.
-        Please use Table(tabledict=<dict>,buff_length=<float/int>,line_color=<HEX/RGB>,raw_string_color=<HEX/RGB>)
-        instead. Table.get_table() now returns nothing.''')
-    
     def make_table(self):
 
         self.unchanged=True #unchanged becomes False when some record or field has been added.
