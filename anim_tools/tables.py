@@ -55,6 +55,7 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         VGroup.__init__(self) #Initialise Table as VGroup
         
         self.make_table() #Make the table with the parameters in CONFIG
+        self.move_to(ORIGIN)
     
     def scale(self, scale_factor, **kwargs): #custom scale function updates the cell length and table length as required
         if self.unchanged==False:
@@ -72,6 +73,7 @@ class Table(VGroup): #TODO: Specific Table position insertions.
             lambda points: scale_factor * points, **kwargs
         )
         return self
+    
     def make_table(self):
 
         self.unchanged=True #unchanged becomes False when some record or field has been added.
