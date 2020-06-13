@@ -1,8 +1,8 @@
 from manim.constants import *
 from manim.mobject.three_dimensions import Sphere
 from manim.mobject.types.vectorized_mobject import VGroup
-from sanim.anim_tools import shading
-from sanim.maths_tools import coordinates
+from ..anim_tools import shading
+from ..maths_tools import coordinates
 
 class ThomsonsAtom(VGroup):
     """
