@@ -1,4 +1,4 @@
-from manim.constants import *
+from manimlib.constants import *
 def get_surface(surface,fill_color=WHITE, stroke_color=None, fill_opacity=0.5, stroke_width=0, stroke_opacity=None):
     if not stroke_color:
         stroke_color=fill_color

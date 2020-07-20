@@ -1,24 +1,24 @@
 import warnings
 from typing import *
 
-from manim.utils.iterables import list_update
+from manimlib.utils.iterables import list_update
 
-from manim.animation.creation import ShowCreation
-from manim.animation.transform import Transform
-from manim.animation.transform import ApplyMethod
-from manim.animation.composition import AnimationGroup
+from manimlib.animation.creation import ShowCreation
+from manimlib.animation.transform import Transform
+from manimlib.animation.transform import ApplyMethod
+from manimlib.animation.composition import AnimationGroup
 
-from manim.mobject.types.vectorized_mobject import VGroup
-from manim.mobject.geometry import Line
+from manimlib.mobject.types.vectorized_mobject import VGroup
+from manimlib.mobject.geometry import Line
 
-from manim.mobject.svg.tex_mobject import TexMobject
-from manim.mobject.svg.tex_mobject import TextMobject
-from manim.mobject.svg.text_mobject import Text
-from manim.mobject.numbers import DecimalNumber
-from manim.mobject.numbers import Integer
+from manimlib.mobject.svg.tex_mobject import TexMobject
+from manimlib.mobject.svg.tex_mobject import TextMobject
+from manimlib.mobject.svg.text_mobject import Text
+from manimlib.mobject.numbers import DecimalNumber
+from manimlib.mobject.numbers import Integer
 
 
-from manim.constants import *
+from manimlib.constants import *
 
 class Tools():
     def flatten(inlist):

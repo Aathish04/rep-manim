@@ -1,6 +1,6 @@
-from manim.constants import *
-from manim.mobject.three_dimensions import Sphere
-from manim.mobject.types.vectorized_mobject import VGroup
+from manimlib.constants import *
+from manimlib.mobject.three_dimensions import Sphere
+from manimlib.mobject.types.vectorized_mobject import VGroup
 from ..anim_tools import shading
 from ..maths_tools import coordinates
 
