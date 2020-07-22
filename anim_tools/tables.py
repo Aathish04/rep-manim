@@ -33,6 +33,8 @@ class Tools():
 class Table(VGroup): #TODO: Specific Table position insertions.
     CONFIG={
             "tabledict":{},
+            "vbuff_length":None,
+            "hbuff_length":None,
             "buff_length":0.3,
             "line_color":WHITE,
             "raw_string_color":WHITE,
@@ -46,6 +48,8 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         if not self.CONFIG["tabledict"]:
             self.tabledict:dict = tabledict
         self.buff_length:Union[float,int]=self.CONFIG["buff_length"]
+        self.vbuff_length=self.buff_length if self.CONFIG["vbuff_length"] is None else self.CONFIG["vbuff_length"]
+        self.hbuff_length=self.buff_length if self.CONFIG["hbuff_length"] is None else self.CONFIG["hbuff_length"]
         self.line_color:Union[str,hex]=self.CONFIG["line_color"]
         self.raw_string_color:Union[str,hex]=self.CONFIG["raw_string_color"]
         self.unchanged:bool=True
@@ -81,6 +85,8 @@ class Table(VGroup): #TODO: Specific Table position insertions.
         #Get values from CONFIG
         tabledict=self.tabledict
         buff_length=self.buff_length
+        hbuff_length=self.hbuff_length
+        vbuff_length=self.vbuff_length
         line_color=self.line_color
         raw_string_color=self.raw_string_color
 
@@ -102,8 +108,8 @@ class Table(VGroup): #TODO: Specific Table position insertions.
                 else:
                     continue
 
-        cell_length=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_width()) ).get_width() + 2*buff_length #The length/height of a record/field of
-        cell_height=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_height()) ).get_height()+ 2*buff_length #max length/height is the base cell size
+        cell_length=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_width()) ).get_width() + 2*hbuff_length #The length/height of a record/field of
+        cell_height=( max(fields + Tools.flatten(tabledict.values()), key=lambda mobject:mobject.get_height()) ).get_height()+ 2*vbuff_length #max length/height is the base cell size
 
         self.cell_height=cell_height
         self.cell_length=cell_length
