@@ -1,11 +1,13 @@
 # Sanim
 ## Description
-Generic Science tools for Manim. Currently include a Table drawing script, a crude model of Thomson's Atom, and some shading utilities.
+Generic Science tools for Manim. Currently include a Table Mobject, a crude model of Thomson's Atom, and some shading utilities.
 
 Instructions for use:
-1. Clone the folder into the same directory housing your Manim projects / place the cloned folder inside the manim folder,(at the same level as the manimlib folder) wherever you installed Manim to.
-2. Add `from sanim.<folder the tool's file is in>.<script enabling the feature>` to your imports.
-3. Use as required.
+1. Clone the folder into the same directory housing your Manim projects
+2. Move into the `sanim` directory.
+3. Run `pip install -e .` .  This will install `sanim`.
+4. Import sanim and it's utilities like so : `from sanim import *`
+5. Use utilities as required.
 
 > Note:
 The master branch of the repository is compatible with, and only with the ManimCommunity branch of Manim.
