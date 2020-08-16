@@ -116,6 +116,3 @@ media
 .eggs/
 build/
 dist/
-
-/media_dir.txt
-# ^TODO: Remove the need for this with a proper config file
