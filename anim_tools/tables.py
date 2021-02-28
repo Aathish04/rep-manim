@@ -54,8 +54,7 @@ class Table(VGroup):
         self._draw_table_lines()
 
     def _type_convert_table_header(self):
-        keys = list(self.data.keys())
-        for key in keys:
+        for key in self.data.keys():
             if isinstance(key, (float, int)):
                 key = str(key)
 
