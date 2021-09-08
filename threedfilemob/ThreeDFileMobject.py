@@ -9,7 +9,7 @@ class OBJVMobject(VGroup):
         isint = lambda s: s.isdigit() or (s.startswith("-") and s[1:].isdigit())
 
         groups = None  # Not all obj files specify groups. Set default group to None
-        material = None  # Some faces have no material specified. WTH?
+        material = WHITE  # Default material is white in colour.
         for line in self.textlines:
             if line.startswith("#") or len(line.strip()) == 0:
                 continue
@@ -28,7 +28,7 @@ class OBJVMobject(VGroup):
             elif linedata[0] == "usemtl":
                 material = linedata[1]
             elif linedata[0] == "f":
-                face_info = {"group": groups, "usematerial": material}
+                face_info = {"group": groups, "material": material}
                 face_info["vertices"] = [
                     {
                         ("vertex", "texture_vertex", "vertex_normal")[i]: (
