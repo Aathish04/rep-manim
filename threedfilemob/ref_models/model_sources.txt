@@ -1,0 +1,9 @@
+airboat.obj: https://people.sc.fsu.edu/~jburkardt/data/obj/airboat.obj
+
+airboat.mtl : https://people.sc.fsu.edu/~jburkardt/data/obj/vp.mtl
+
+cow.obj : https://groups.csail.mit.edu/graphics/classes/6.837/F03/models/cow-nonormals.obj
+
+teapot.obj : https://groups.csail.mit.edu/graphics/classes/6.837/F03/models/teapot.obj
+
+teddybear.obj : https://groups.csail.mit.edu/graphics/classes/6.837/F03/models/teddy.obj
