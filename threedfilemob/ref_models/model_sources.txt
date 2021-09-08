@@ -2,6 +2,10 @@ airboat.obj: https://people.sc.fsu.edu/~jburkardt/data/obj/airboat.obj
 
 airboat.mtl : https://people.sc.fsu.edu/~jburkardt/data/obj/vp.mtl
 
+capsule: http://paulbourke.net/dataformats/obj/minobj.html
+
+box.obj : http://paulbourke.net/dataformats/obj/box.obj
+
 cow.obj : https://groups.csail.mit.edu/graphics/classes/6.837/F03/models/cow-nonormals.obj
 
 teapot.obj : https://groups.csail.mit.edu/graphics/classes/6.837/F03/models/teapot.obj
