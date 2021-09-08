@@ -4,13 +4,22 @@ from pathlib import Path
 
 
 class OBJMobject(VGroup):
-    # TODO: Colours; textures; Free-form curves/surfaces; smoothing groups
+    # TODO: Better Colours; textures; Free-form geometry; smoothing groups
+
+    def get_faces_by_group(self, *groups):
+        return VGroup(
+            *[
+                self.submobjects[i]
+                for i, faceinfo in enumerate(self.faces_info)
+                if all(group in faceinfo["groups"] for group in groups)
+            ]
+        )
 
     def _parse_obj_file(self):
         isint = lambda s: s.isdigit() or (s.startswith("-") and s[1:].isdigit())
 
         groups = None  # Not all obj files specify groups. Set default group to None
-        material = None  # Default material is white in colour. Gets handled in self.b
+        material = None  # Default material is white in colour. Gets handled in self._build_faces
         for line in self.textlines:
             if line.startswith("#") or len(line.strip()) == 0:
                 continue
@@ -28,13 +37,17 @@ class OBJMobject(VGroup):
             elif linedata[0] == "vt":
                 self.texture_vertices.append(list(map(float, linedata[1:4])))
             elif linedata[0] == "g":
-                groups = (
-                    linedata[1:] if len(linedata) > 1 else None
-                )  # If no group names are mentioned use None.
+                # If no group names are mentioned use a list with None.
+                # None is put in a list so iterating doesn't break.
+                groups = linedata[1:] if len(linedata) > 1 else [None]
+                for group in groups:
+                    if group not in self.group_names:
+                        self.group_names.append(group)
+
             elif linedata[0] == "usemtl":
                 material = linedata[1]
             elif linedata[0] == "f":
-                face_info = {"group": groups, "material": material}
+                face_info = {"groups": groups, "material": material}
                 face_info["vertices"] = [
                     {
                         ("vertex", "texture_vertex", "vertex_normal")[i]: (
@@ -61,23 +74,23 @@ class OBJMobject(VGroup):
             linedata = line.split()
             if linedata[0] == "newmtl":
                 material_name = linedata[1]
-                self.material_dict[material_name] = {}
+                self.materials_dict[material_name] = {}
             elif linedata[0] == "Ka":
                 if linedata[1] == "spectral" or len(linedata[1:]) > 4:
                     continue
-                self.material_dict[material_name]["ambient_reflectivity"] = list(
+                self.materials_dict[material_name]["ambient_reflectivity"] = list(
                     map(float, linedata[1:])
                 )
             elif linedata[0] == "Kd":
                 if linedata[1] == "spectral" or len(linedata[1:]) > 4:
                     continue
-                self.material_dict[material_name]["diffuse_reflectivity"] = list(
+                self.materials_dict[material_name]["diffuse_reflectivity"] = list(
                     map(float, linedata[1:])
                 )
             elif linedata[0] == "Ks":
                 if linedata[1] == "spectral" or len(linedata[1:]) > 4:
                     continue
-                self.material_dict[material_name]["specular_reflectivity"] = list(
+                self.materials_dict[material_name]["specular_reflectivity"] = list(
                     map(float, linedata[1:])
                 )
 
@@ -92,8 +105,10 @@ class OBJMobject(VGroup):
                 .set_fill(
                     WHITE
                     if face_info["material"] is None
+                    or "diffuse_reflectivity"
+                    not in self.materials_dict[face_info["material"]]
                     else rgb_to_color(
-                        self.material_dict[face_info["material"]][
+                        self.materials_dict[face_info["material"]][
                             "diffuse_reflectivity"
                         ]
                     )
@@ -109,8 +124,9 @@ class OBJMobject(VGroup):
         self.vertices = []
         self.vertex_normals = []
         self.texture_vertices = []
-        self.material_dict = {}
+        self.materials_dict = {}
         self.faces_info = []
+        self.group_names = []
         with open(fp, "r") as f:
             self.textlines = f.readlines()
 
@@ -127,24 +143,9 @@ class Test(ThreeDScene):
             phi=-45 * DEGREES, theta=-135 * DEGREES, gamma=-55 * DEGREES
         )
         filename = "coloured/airboat/airboat.obj"
-        model = (
-            OBJMobject(
-                path.abspath(
-                    path.dirname(__file__)
-                    + path.sep
-                    + "ref_models"
-                    + path.sep
-                    + filename
-                )
+        model = OBJMobject(
+            path.abspath(
+                path.dirname(__file__) + path.sep + "ref_models" + path.sep + filename
             )
-            .scale(0.5)
-            .shift(UP * 0.5)
-        )
-        with open(
-            "/Users/aathishs/Projects/Python/ManimStuff/rep-manim/threedfilemob/ThreeDFileMobject.json",
-            "w",
-        ) as f:
-            import json
-
-            json.dump(model.faces_info, f)
+        ).scale(0.5)
         self.add(model)
