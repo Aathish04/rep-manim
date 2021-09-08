@@ -3,7 +3,7 @@ from os import path
 from pathlib import Path
 
 
-class OBJVMobject(VGroup):
+class OBJMobject(VGroup):
     # TODO: Colours; textures; Free-form curves/surfaces; smoothing groups
 
     def _parse_obj_file(self):
@@ -128,7 +128,7 @@ class Test(ThreeDScene):
         )
         filename = "coloured/airboat/airboat.obj"
         model = (
-            OBJVMobject(
+            OBJMobject(
                 path.abspath(
                     path.dirname(__file__)
                     + path.sep
