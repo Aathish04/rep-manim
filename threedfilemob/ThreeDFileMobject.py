@@ -20,79 +20,91 @@ class OBJMobject(VGroup):
 
         groups = None  # Not all obj files specify groups. Set default group to None
         material = None  # Default material is white in colour. Gets handled in self._build_faces
-        for line in self.textlines:
-            if line.startswith("#") or len(line.strip()) == 0:
-                continue
-            linedata = line.split()
-            if linedata[0] == "mtllib":
-                mtlfilepaths = list(map(Path, linedata[1:]))
-                for mtlfilepath in mtlfilepaths:
-                    if not mtlfilepath.is_absolute():
-                        mtlfilepath = self.fp.parent / mtlfilepath
-                    self._parse_mtl_file(mtlfilepath)
-            if linedata[0] == "v":
-                self.vertices.append(list(map(float, linedata[1:4])))
-            elif linedata[0] == "vn":
-                self.vertex_normals.append(list(map(float, linedata[1:4])))
-            elif linedata[0] == "vt":
-                self.texture_vertices.append(list(map(float, linedata[1:4])))
-            elif linedata[0] == "g":
-                # If no group names are mentioned use a list with None.
-                # None is put in a list so iterating doesn't break.
-                groups = linedata[1:] if len(linedata) > 1 else [None]
-                for group in groups:
-                    if group not in self.group_names:
-                        self.group_names.append(group)
+        with open(self.fp, "r") as f:
+            for line in f.readlines():
+                if line.startswith("#") or len(line.strip()) == 0:
+                    continue
+                linedata = line.split()
+                if linedata[0] == "mtllib":
+                    mtlfilepaths = list(map(Path, linedata[1:]))
+                    for mtlfilepath in mtlfilepaths:
+                        if not mtlfilepath.is_absolute():
+                            mtlfilepath = self.fp.parent / mtlfilepath
+                        self._parse_mtl_file(mtlfilepath)
+                if linedata[0] == "v":
+                    self.vertices.append(list(map(float, linedata[1:4])))
+                elif linedata[0] == "vn":
+                    self.vertex_normals.append(list(map(float, linedata[1:4])))
+                elif linedata[0] == "vt":
+                    self.texture_vertices.append(list(map(float, linedata[1:4])))
+                elif linedata[0] == "g":
+                    # If no group names are mentioned use a list with None.
+                    # None is put in a list so iterating doesn't break.
+                    groups = linedata[1:] if len(linedata) > 1 else [None]
+                    for group in groups:
+                        if group not in self.group_names:
+                            self.group_names.append(group)
 
-            elif linedata[0] == "usemtl":
-                material = linedata[1]
-            elif linedata[0] == "f":
-                face_info = {"groups": groups, "material": material}
-                face_info["vertices"] = [
-                    {
-                        ("vertex", "texture_vertex", "vertex_normal")[i]: (
-                            self.vertices,
-                            self.texture_vertices,
-                            self.vertex_normals,
-                        )[i][
-                            int(index) - 1 if int(index) >= 1 else int(index)
-                        ]  # Indexing starts from 1. Reverse indexing also possible.
-                        if isint(index)
-                        else None
-                        for i, index in enumerate(text_vertex_data.split("/"))
-                    }
-                    for text_vertex_data in linedata[1:]
-                ]
-                self.faces_info.append(face_info)
+                elif linedata[0] == "usemtl":
+                    material = linedata[1]
+                elif linedata[0] == "f":
+                    face_info = {"groups": groups, "material": material}
+                    face_info["vertices"] = [
+                        {
+                            ("vertex", "texture_vertex", "vertex_normal")[i]: (
+                                self.vertices,
+                                self.texture_vertices,
+                                self.vertex_normals,
+                            )[i][
+                                int(index) - 1 if int(index) >= 1 else int(index)
+                            ]  # Indexing starts from 1. Reverse indexing also possible.
+                            if isint(index)
+                            else None
+                            for i, index in enumerate(text_vertex_data.split("/"))
+                        }
+                        for text_vertex_data in linedata[1:]
+                    ]
+                    self.faces_info.append(face_info)
 
     def _parse_mtl_file(self, mtlfilepath):
         with open(mtlfilepath, "r") as f:
-            textlines = f.readlines()
-        for line in textlines:
-            if line.startswith("#") or len(line.strip()) == 0:
-                continue
-            linedata = line.split()
-            if linedata[0] == "newmtl":
-                material_name = linedata[1]
-                self.materials_dict[material_name] = {}
-            elif linedata[0] == "Ka":
-                if linedata[1] == "spectral" or len(linedata[1:]) > 4:
+            for line in f.readlines():
+                if line.startswith("#") or len(line.strip()) == 0:
                     continue
-                self.materials_dict[material_name]["ambient_reflectivity"] = list(
-                    map(float, linedata[1:])
-                )
-            elif linedata[0] == "Kd":
-                if linedata[1] == "spectral" or len(linedata[1:]) > 4:
-                    continue
-                self.materials_dict[material_name]["diffuse_reflectivity"] = list(
-                    map(float, linedata[1:])
-                )
-            elif linedata[0] == "Ks":
-                if linedata[1] == "spectral" or len(linedata[1:]) > 4:
-                    continue
-                self.materials_dict[material_name]["specular_reflectivity"] = list(
-                    map(float, linedata[1:])
-                )
+                linedata = line.split()
+                if linedata[0] == "newmtl":
+                    material_name = linedata[1]
+                    self.materials_dict[material_name] = {}
+                elif linedata[0] == "Ka":
+                    if linedata[1] == "spectral" or len(linedata[1:]) > 4:
+                        logger.warning(
+                            "Spectral and CIEXYZ colour is not supported yet. "
+                            "Your model may be coloured strangely."
+                        )
+                        continue
+                    self.materials_dict[material_name]["ambient_reflectivity"] = list(
+                        map(float, linedata[1:])
+                    )
+                elif linedata[0] == "Kd":
+                    if linedata[1] == "spectral" or len(linedata[1:]) > 4:
+                        logger.warning(
+                            "Spectral and CIEXYZ colour is not supported yet. "
+                            "Your model may be coloured strangely."
+                        )
+                        continue
+                    self.materials_dict[material_name]["diffuse_reflectivity"] = list(
+                        map(float, linedata[1:])
+                    )
+                elif linedata[0] == "Ks":
+                    if linedata[1] == "spectral" or len(linedata[1:]) > 4:
+                        logger.warning(
+                            "Spectral and CIEXYZ colour is not supported yet. "
+                            "Your model may be coloured strangely."
+                        )
+                        continue
+                    self.materials_dict[material_name]["specular_reflectivity"] = list(
+                        map(float, linedata[1:])
+                    )
 
     def _build_faces(self):
         for face_info in self.faces_info:
@@ -108,6 +120,7 @@ class OBJMobject(VGroup):
                     or "diffuse_reflectivity"
                     not in self.materials_dict[face_info["material"]]
                     else rgb_to_color(
+                        # Use diffuse reflectivity as it is closest to actual color.
                         self.materials_dict[face_info["material"]][
                             "diffuse_reflectivity"
                         ]
@@ -127,8 +140,6 @@ class OBJMobject(VGroup):
         self.materials_dict = {}
         self.faces_info = []
         self.group_names = []
-        with open(fp, "r") as f:
-            self.textlines = f.readlines()
 
         self._parse_obj_file()
         self._build_faces()
